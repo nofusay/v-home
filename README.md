@@ -1,6 +1,6 @@
 # v-home
 
-## Project setup
+### Project setup
 ```
 npm install
 ```
@@ -25,5 +25,6 @@ npm run test
 npm run lint
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+### 后端接口配合 ( php )
+
+[ThinkPHP 5.1](https://github.com/nofusay/v-admin.git)
