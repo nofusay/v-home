@@ -25,6 +25,5 @@ npm run test
 npm run lint
 ```
 
-### 后端接口配合 ( php )
-
-[ThinkPHP 5.1](https://github.com/nofusay/v-admin.git)
+### 后端接口配合 ( ThinkPHP 5.1 )
+[https://github.com/nofusay/v-admin.git](https://github.com/nofusay/v-admin.git)
