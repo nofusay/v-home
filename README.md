@@ -1,4 +1,7 @@
-# v-home
+### v-home
+```
+vue + php 后台模板
+```
 
 ### Project setup
 ```
@@ -27,3 +30,4 @@ npm run lint
 
 #### 后端接口配合 ( ThinkPHP 5.1 )
 [https://github.com/nofusay/v-admin.git](https://github.com/nofusay/v-admin.git)
+
