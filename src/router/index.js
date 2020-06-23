@@ -15,6 +15,8 @@ const Menus = () => import(/* webpackChunkName: "Menus_Roles_Users" */ '../compo
 const Roles = () => import(/* webpackChunkName: "Menus_Roles_Users" */ '../components/roles/Roles.vue')
 const Users = () => import(/* webpackChunkName: "Menus_Roles_Users" */ '../components/roles/User.vue')
 
+const Goods = () => import(/* webpackChunkName: "Goods" */ '../components/goods/Goods.vue')
+
 Vue.use(VueRouter)
 
 const routes = [
@@ -29,7 +31,8 @@ const routes = [
       { path: '/welcome', component: Welcome, name: '首页' },
       { path: '/menus', component: Menus, name: '菜单管理', meta: { keepAlive: true } },
       { path: '/roles', component: Roles, name: '角色管理', meta: { keepAlive: true } },
-      { path: '/users', component: Users, name: '用户管理', meta: { keepAlive: true } }
+      { path: '/users', component: Users, name: '用户管理', meta: { keepAlive: true } },
+      { path: '/goods', component: Goods, name: '商品信息', meta: { keepAlive: true } }
     ]
   }
 ]

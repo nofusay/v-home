@@ -289,6 +289,7 @@ export default {
     // ======== 添加菜单 ========
     async addMenu () {
       const res = await this.getParentMenuList()
+      console.log(res.data)
       // 设置下拉菜单数据
       this.addOptions = res.data
       this.addMenuDialogVisible = true

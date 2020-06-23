@@ -47,7 +47,8 @@ import {
   Divider,
   Radio,
   RadioGroup,
-  RadioButton
+  RadioButton,
+  Image
 } from 'element-ui'
 
 Vue.use(Button)
@@ -96,6 +97,7 @@ Vue.use(Divider)
 Vue.use(Radio)
 Vue.use(RadioGroup)
 Vue.use(RadioButton)
+Vue.use(Image)
 
 Vue.prototype.$message = Message
 Vue.prototype.$confirm = MessageBox.confirm

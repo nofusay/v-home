@@ -19,7 +19,7 @@ import './assets/css/global.css'
 // 配置axios
 import axios from 'axios'
 Vue.prototype.$http = axios
-axios.defaults.baseURL = 'http://localhost/nofu-admin/public/admin/'
+axios.defaults.baseURL = 'http://localhost/v-admin/public/admin/'
 
 // 在header中绑定token
 axios.interceptors.request.use(config => {
@@ -57,6 +57,15 @@ Vue.filter('dateFormat', function (originVal) {
   // const ss = (dt.getSeconds() + '').padStart(2, '0')
 
   return `${y}-${m}-${d} ${hh}:${mm}`
+})
+
+Vue.filter('dateFormatS', function (originVal) {
+  const dt = new Date(originVal)
+  const y = dt.getFullYear()
+  const m = (dt.getMonth() + 1 + '').padStart(2, '0')
+  const d = (dt.getDate() + '').padStart(2, '0')
+
+  return `${y}-${m}-${d}`
 })
 
 new Vue({
