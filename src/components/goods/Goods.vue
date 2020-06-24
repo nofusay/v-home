@@ -20,7 +20,7 @@
             <img-zoom :src="scope.row.img" width="40" height="40" :bigsrc="scope.row.img" :configs="configs"></img-zoom>
           </template>
         </el-table-column>
-        <el-table-column prop="stage_id" label="商品状态" align="center" width="100">
+        <el-table-column prop="stage_id" label="SKU状态" align="center" width="100">
           <template slot-scope="scope">
             <el-tag v-if="scope.row.stage_id === 5" type="success" size="mini" effect="plain">已完结</el-tag>
             <span v-else-if="scope.row.stage_id === 0"></span>
@@ -46,11 +46,11 @@
           <template slot-scope="scope">
             <!-- 修改 -->
             <el-tooltip effect="light" content="修改" placement="top" :enterable="false">
-              <el-button icon="el-icon-edit" circle size="mini" @click="editRole(scope.row.id)"></el-button>
+              <el-button icon="el-icon-edit" circle size="mini" @click="editRole(scope.row)"></el-button>
             </el-tooltip>
             <!-- 删除 -->
             <el-tooltip effect="light" content="删除" placement="top" :enterable="false">
-              <el-button icon="el-icon-delete" circle size="mini"></el-button>
+              <el-button icon="el-icon-delete" circle size="mini" @click="delGood(scope.row)"></el-button>
             </el-tooltip>
           </template>
         </el-table-column>
@@ -128,11 +128,14 @@
         </el-form-item>
         <el-form-item label="图片上传">
           <el-upload
+            ref="uploadImg"
             action="http://localhost/v-admin/public/admin/Good/upload"
             :on-remove="handleRemove"
             list-type="picture"
             :headers="headersObj"
-            :on-success="handleSuccess">
+            :on-success="handleSuccess"
+            :before-upload="beforeUp"
+            :limit="limitUpImg">
             <el-button size="small" type="primary" plain>点击上传</el-button>
             <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过3M</div>
           </el-upload>
@@ -141,6 +144,86 @@
       <span slot="footer" class="dialog-footer">
         <el-button size="small" @click="addGoodDialogVisible = false">取 消</el-button>
         <el-button size="small" type="primary" @click="saveGood">确 定</el-button>
+      </span>
+    </el-dialog>
+
+    <!-- 修改商品对话框 -->
+    <el-dialog title="修改商品" :visible.sync="editGoodDialogVisible" @close="editGoodDialogClosed" width="35%" v-dialogDrag>
+      <el-form :model="editGoodForm" :rules="editGoodFormRules" ref="editGoodFormRef">
+        <el-row :gutter="15">
+          <el-col :span="12">
+            <el-form-item label="品名" prop="proname">
+              <el-input v-model="editGoodForm.proname"></el-input>
+            </el-form-item>
+            <el-form-item label="颜色组" prop="gcolor">
+              <el-input v-model="editGoodForm.gcolor" placeholder="示例：黑色、白色、红色"></el-input>
+            </el-form-item>
+            <el-form-item label="品类" prop="cate_id">
+             <el-cascader
+              v-model="editGoodForm.cate_id"
+              :options="addOptions"
+              :props="addProps"
+              @change="editCateChange"
+              :show-all-levels="false"
+              clearable>
+              </el-cascader>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="材质" prop="mater">
+              <el-select v-model="editGoodForm.mater_id" placeholder="请选择" clearable>
+                <el-option
+                  v-for="item in materList"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="年份" prop="wave">
+              <el-select v-model="editGoodForm.wave_id" placeholder="请选择" clearable>
+                <el-option
+                  v-for="item in waveList"
+                  :key="item.id"
+                  :label="item.year"
+                  :value="item.id">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="品牌" prop="brand">
+              <el-select v-model="editGoodForm.brand_id" placeholder="请选择" clearable>
+                <el-option
+                  v-for="item in brandList"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item label="备注" prop="state">
+          <el-input v-model="editGoodForm.state"></el-input>
+        </el-form-item>
+        <el-form-item label="图片上传">
+          <el-upload
+            ref="editUploadImg"
+            action="http://localhost/v-admin/public/admin/Good/upload"
+            :on-remove="handleRemoveEdit"
+            :file-list="imgList"
+            list-type="picture"
+            :headers="headersObj"
+            :on-success="handleSuccessEdit"
+            :before-upload="beforeUp"
+            :limit="limitUpImg">
+            <el-button size="small" type="primary" plain>点击上传</el-button>
+            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过3M</div>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button size="small" @click="editGoodDialogVisible = false">取 消</el-button>
+        <el-button size="small" type="primary" @click="editGood">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -177,7 +260,8 @@ export default {
         mater_id: '',
         wave_id: 9,
         brand_id: 2,
-        state: ''
+        state: '',
+        imgurl: ''
       },
       cateKeys: [],
       addOptions: [],
@@ -187,6 +271,7 @@ export default {
         children: 'children',
         expandTrigger: 'hover'
       },
+      // 添加商品表单验证
       addGoodFormRules: {
         cate_id: [
           { required: true, message: '请选择品类', trigger: 'blur' }
@@ -200,7 +285,31 @@ export default {
       // 配置请求头
       headersObj: {
         Authorization: window.sessionStorage.getItem('token')
-      }
+      },
+      // 最大上传个数
+      limitUpImg: 1,
+
+      // =========== 修改父级商品 ===========
+      editGoodDialogVisible: false,
+      editGoodForm: {
+        id: 0,
+        proname: '',
+        gcolor: '',
+        cate_id: 0,
+        mater_id: 0,
+        wave_id: 0,
+        brand_id: 0,
+        state: '',
+        imgurl: ''
+      },
+      // 修改商品表单验证
+      editGoodFormRules: {
+        cate_id: [
+          { required: true, message: '请选择品类', trigger: 'blur' }
+        ]
+      },
+      // 显示的图片
+      imgList: []
     }
   },
   created () {
@@ -268,6 +377,7 @@ export default {
         wave_id: 9,
         brand_id: 2
       }
+      this.$refs.uploadImg.clearFiles()
     },
     // 保存商品
     saveGood () {
@@ -281,16 +391,128 @@ export default {
         this.getGoodList()
       })
     },
-    // ========= 图片上传 =========
+    // ========= 图片上传 添加 =========
     // 移除图片
-    handleRemove (file) {
-      console.log(file)
+    async handleRemove (file) {
+      // 2 代表移除图片
+      const { data: res } = await this.$http.post('/Good/moveImg', { params: { imgUrl: file.response.imgurl } })
+      if (res.code) { return this.$message.error(res.msg) }
+      this.addGoodForm.imgurl = ''
     },
     // 上传后的回调
     handleSuccess (res) {
-      console.log(res)
-      // const picInfo = { pic: res.data.tmp_path }
-      // this.addForm.pics.push(picInfo)
+      if (res.code) {
+        this.$refs.uploadImg.clearFiles()
+        return this.$message.error(res.msg)
+      }
+      this.addGoodForm.imgurl = res.imgurl
+    },
+    beforeUp (file) {
+      const type = file.type
+      if (type !== 'image/png' && type !== 'image/jpeg') {
+        this.$message.error('只允许上传 png 或 jpg 的图片')
+        return false
+      }
+    },
+
+    // ========= 商品修改 =========
+    async editRole (row) {
+      // 获取品类列表、材质列表、年份列表
+      const res = await this.getSelectList()
+      this.addOptions = res.cateList
+      this.materList = res.materList
+      this.waveList = res.waveList
+      this.brandList = res.brandList
+
+      // 判断是当前行是父级还是子级
+      const { data: pres } = await this.$http.post('/Good/goodDetail', {
+        params: {
+          // 0: 父级  1: 子级
+          type: row.cate ? '0' : '1',
+          id: row.id
+        }
+      })
+      if (pres.code) { return this.$message.error(pres.msg) }
+      this.editGoodForm = pres.data
+      if (pres.data.imgurl !== null) {
+        this.imgList.push({
+          url: pres.data.img,
+          imgurl: pres.data.imgurl
+        })
+      }
+      this.editGoodDialogVisible = true
+    },
+    // 品类选择时触发
+    editCateChange () {
+      // 改变表单中的cate_id
+      this.editGoodForm.cate_id = this.editGoodForm.cate_id[this.editGoodForm.cate_id.length - 1]
+    },
+    // 弹框初始化
+    editGoodDialogClosed () {
+      this.$refs.editGoodFormRef.resetFields()
+      this.editGoodForm = {
+        id: 0,
+        proname: '',
+        gcolor: '',
+        cate_id: 0,
+        mater_id: 0,
+        wave_id: 0,
+        brand_id: 0,
+        state: '',
+        imgurl: ''
+      }
+      this.imgList = []
+    },
+
+    // ========= 图片上传 修改 =========
+    // 移除图片
+    async handleRemoveEdit (file) {
+      // 2 代表移除图片
+      const { data: res } = await this.$http.post('/Good/moveImg', { params: { imgUrl: file.imgurl } })
+      if (res.code) { return this.$message.error(res.msg) }
+      this.editGoodForm.imgurl = ''
+    },
+    // 上传后的回调
+    handleSuccessEdit (res) {
+      if (res.code) {
+        this.$refs.editUploadImg.clearFiles()
+        return this.$message.error(res.msg)
+      }
+      this.editGoodForm.imgurl = res.imgurl
+    },
+    // 修改提交
+    async editGood () {
+      this.$refs.editGoodFormRef.validate(async valid => {
+        if (!valid) { return false }
+        const { data: res } = await this.$http.post('/Good/edit', { params: this.editGoodForm })
+        if (res.code) { return this.$message.error(res.msg) }
+        this.$message.success(res.msg)
+        // 隐藏对话框
+        this.editGoodDialogVisible = false
+        this.getGoodList()
+      })
+    },
+
+    // ========= 商品删除 =========
+    async delGood (row) {
+      const result = await this.$confirm('确定要永久删除该商品所有信息吗?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).catch(err => err)
+
+      if (result !== 'confirm') { return false }
+
+      // 判断是当前行是父级还是子级
+      const { data: pres } = await this.$http.post('/Good/del', {
+        params: {
+          // 0: 父级  1: 子级
+          type: row.cate ? '0' : '1',
+          id: row.id
+        }
+      })
+      if (pres.code) { return this.$message.error(pres.msg) }
+      this.getGoodList()
     }
   }
 }
